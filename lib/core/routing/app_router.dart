@@ -232,7 +232,8 @@ class AppRouter {
             if (args is AppRouteArgs) adminType = args.adminType;
             return TipAddPage(adminType: adminType);
           },
-        );
+        ); 
+        
 
       case RouteNames.editTip:
         return MaterialPageRoute(
