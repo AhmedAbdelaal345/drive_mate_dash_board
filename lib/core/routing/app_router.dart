@@ -1,5 +1,7 @@
 import 'package:drive_mate_dash_board/core/routing/route_names.dart';
+import 'package:drive_mate_dash_board/features/articls/view/article_view.dart';
 import 'package:drive_mate_dash_board/features/auth/view/login_page.dart';
+import 'package:drive_mate_dash_board/features/community/view/community_view.dart';
 import 'package:drive_mate_dash_board/features/dashboard/view/dashboard_page.dart';
 import 'package:drive_mate_dash_board/core/widgets/generic_dashboard_page.dart';
 import 'package:drive_mate_dash_board/core/routing/app_route_args.dart';
@@ -32,9 +34,7 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const LoginPage());
 
       case RouteNames.dashboard:
-        return MaterialPageRoute(
-          builder: (ctx) => const DashboardPage(),
-        );
+        return MaterialPageRoute(builder: (ctx) => const DashboardPage());
 
       case RouteNames.activityLog:
         return MaterialPageRoute(
@@ -59,7 +59,10 @@ class AppRouter {
             } else if (args is Map && args.containsKey('activity')) {
               activity = args['activity'] as ActivityItemModel?;
             }
-            return ActivityDetailsPage(adminType: adminType, activity: activity);
+            return ActivityDetailsPage(
+              adminType: adminType,
+              activity: activity,
+            );
           },
         );
 
@@ -183,11 +186,7 @@ class AppRouter {
             final args = settings.arguments;
             AdminType adminType = AdminType.opsAdmin;
             if (args is AppRouteArgs) adminType = args.adminType;
-            return GenericDashboardPage(
-              title: 'Analytics',
-              selectedRoute: RouteNames.analytics,
-              adminType: adminType,
-            );
+            return AnalyticsPage(adminType: adminType);
           },
         );
 
@@ -197,11 +196,7 @@ class AppRouter {
             final args = settings.arguments;
             AdminType adminType = AdminType.opsAdmin;
             if (args is AppRouteArgs) adminType = args.adminType;
-            return GenericDashboardPage(
-              title: 'Community',
-              selectedRoute: RouteNames.community,
-              adminType: adminType,
-            );
+            return CommunityPage(adminType: adminType);
           },
         );
 
