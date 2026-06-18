@@ -38,7 +38,7 @@ class DriverMateDashboardApp extends StatelessWidget {
               ServiceCentersCubit(ServiceCentersRepo())..loadCenters(),
         ),
         BlocProvider(create: (_) => TipsCubit(TipsRepo())..loadTips()),
-        BlocProvider(create: (_) => UsersCubit(UsersRepo())..loadUsers()),
+        BlocProvider(create: (_) => UsersCubit(UsersRepoImpl())..loadUsers()),
         BlocProvider(create: (_) => AdminsCubit(AdminsRepo())..loadAdmins()),
         BlocProvider(create: (_) => ReportsCubit(ReportsRepo())..loadReports()),
       ],

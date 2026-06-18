@@ -1,6 +1,5 @@
 import 'package:drive_mate_dash_board/core/routing/route_names.dart';
 import 'package:drive_mate_dash_board/core/theme/app_colors.dart';
-import 'package:drive_mate_dash_board/core/widgets/custom_button.dart';
 import 'package:drive_mate_dash_board/core/widgets/dashboard_shell.dart';
 import 'package:drive_mate_dash_board/features/auth/data/model/auth_model.dart';
 import 'package:flutter/material.dart';
@@ -23,31 +22,31 @@ class _TotalCarsPageState extends State<TotalCarsPage> {
       'name': 'Toyota Camry',
       'type': 'Sedan',
       'count': 45,
-      'icon': Icons.directions_car_outlined
+      'icon': Icons.directions_car_outlined,
     },
     {
       'name': 'Nissan Patrol',
       'type': 'SUV',
       'count': 32,
-      'icon': Icons.directions_car_outlined
+      'icon': Icons.directions_car_outlined,
     },
     {
       'name': 'Tesla Model 3',
       'type': 'Electric',
       'count': 28,
-      'icon': Icons.directions_car_outlined
+      'icon': Icons.directions_car_outlined,
     },
     {
       'name': 'Hyundai Tucson',
       'type': 'SUV',
       'count': 21,
-      'icon': Icons.directions_car_outlined
+      'icon': Icons.directions_car_outlined,
     },
     {
       'name': 'Ford Mustang',
       'type': 'Coupe',
       'count': 12,
-      'icon': Icons.directions_car_outlined
+      'icon': Icons.directions_car_outlined,
     },
   ];
 

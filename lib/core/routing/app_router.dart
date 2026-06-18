@@ -6,6 +6,7 @@ import 'package:drive_mate_dash_board/features/dashboard/view/dashboard_page.dar
 import 'package:drive_mate_dash_board/core/widgets/generic_dashboard_page.dart';
 import 'package:drive_mate_dash_board/core/routing/app_route_args.dart';
 import 'package:drive_mate_dash_board/features/auth/data/model/auth_model.dart';
+import 'package:drive_mate_dash_board/features/dataset/view/dataset_view.dart';
 import 'package:drive_mate_dash_board/features/tips/view/tips_list_page.dart';
 import 'package:drive_mate_dash_board/features/tips/view/tip_add_page.dart';
 import 'package:drive_mate_dash_board/features/tips/view/tip_edit_page.dart';
@@ -206,11 +207,7 @@ class AppRouter {
             final args = settings.arguments;
             AdminType adminType = AdminType.opsAdmin;
             if (args is AppRouteArgs) adminType = args.adminType;
-            return GenericDashboardPage(
-              title: 'Datasets',
-              selectedRoute: RouteNames.datasets,
-              adminType: adminType,
-            );
+            return DatasetsPage(adminType: adminType);
           },
         );
 
@@ -232,8 +229,7 @@ class AppRouter {
             if (args is AppRouteArgs) adminType = args.adminType;
             return TipAddPage(adminType: adminType);
           },
-        ); 
-        
+        );
 
       case RouteNames.editTip:
         return MaterialPageRoute(
@@ -256,7 +252,7 @@ class AppRouter {
             final args = settings.arguments;
             AdminType adminType = AdminType.opsAdmin;
             if (args is AppRouteArgs) adminType = args.adminType;
-            return UsersListPage(adminType: adminType);
+            return ManageUsersPage(adminType: adminType);
           },
         );
 

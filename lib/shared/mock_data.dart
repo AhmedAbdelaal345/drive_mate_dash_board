@@ -6,7 +6,6 @@ import 'package:drive_mate_dash_board/features/dashboard/data/model/dashboard_me
 import 'package:drive_mate_dash_board/features/reports/data/model/report_model.dart';
 import 'package:drive_mate_dash_board/features/service_centers/data/model/service_center_model.dart';
 import 'package:drive_mate_dash_board/features/tips/data/model/tip_model.dart';
-import 'package:drive_mate_dash_board/features/users/data/model/user_model.dart';
 
 sealed class MockData {
   static const dashboardMetrics = [
@@ -191,45 +190,6 @@ sealed class MockData {
       likes: 51,
       difficulty: 'Easy',
       duration: '38 mins',
-    ),
-  ];
-
-  static const users = [
-    UserModel(
-      name: 'Ali Fahad',
-      email: 'ali.fahad24@example.com',
-      phone: '+971 50 000 0001',
-      role: 'User',
-      status: 'Active',
-      joinedDate: '6/16/2026',
-      carsCount: 0,
-    ),
-    UserModel(
-      name: 'Khalid Al-Sayed',
-      email: 'khalid.al-sayed36@example.com',
-      phone: '+971 50 000 0002',
-      role: 'Center Admin',
-      status: 'Active',
-      joinedDate: '6/14/2026',
-      carsCount: 1,
-    ),
-    UserModel(
-      name: 'Sara Mahmoud',
-      email: 'sara.mahmoud14@example.com',
-      phone: '+971 50 000 0003',
-      role: 'User',
-      status: 'Active',
-      joinedDate: '6/13/2026',
-      carsCount: 0,
-    ),
-    UserModel(
-      name: 'Mohamed Abdullah',
-      email: 'mohamed@example.com',
-      phone: '+971 50 000 0004',
-      role: 'User',
-      status: 'Suspended',
-      joinedDate: '6/10/2026',
-      carsCount: 2,
     ),
   ];
 
