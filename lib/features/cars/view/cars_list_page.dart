@@ -427,7 +427,7 @@ class _CarsListPageState extends State<CarsListPage> {
                             Navigator.pushNamed(
                               context,
                               RouteNames.editCar,
-                              arguments: {'id': car.name},
+                              arguments: {'id': car.id, 'brandId': car.brandId, 'brand': car.brand, 'model': car.model},
                             );
                           },
                         ),
@@ -443,3 +443,4 @@ class _CarsListPageState extends State<CarsListPage> {
     );
   }
 }
+

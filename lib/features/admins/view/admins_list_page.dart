@@ -6,30 +6,39 @@ import 'package:drive_mate_dash_board/core/widgets/dashboard_shell.dart';
 import 'package:drive_mate_dash_board/core/widgets/empty_state_widget.dart';
 import 'package:drive_mate_dash_board/core/widgets/loading_widget.dart';
 import 'package:drive_mate_dash_board/core/widgets/status_badge.dart';
-import 'package:drive_mate_dash_board/features/auth/data/model/auth_model.dart';
+import 'package:drive_mate_dash_board/features/admins/data/admins_repo.dart';
 import 'package:drive_mate_dash_board/features/admins/manager/admins_cubit.dart';
 import 'package:drive_mate_dash_board/features/admins/manager/admins_state.dart';
+import 'package:drive_mate_dash_board/features/auth/data/model/auth_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class AdminsListPage extends StatefulWidget {
+class AdminsListPage extends StatelessWidget {
   const AdminsListPage({super.key, required this.adminType});
 
   final AdminType adminType;
 
   @override
-  State<AdminsListPage> createState() => _AdminsListPageState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => AdminsCubit(AdminsRepoImpl())..loadAdmins(),
+      child: _AdminsListView(adminType: adminType),
+    );
+  }
 }
 
-class _AdminsListPageState extends State<AdminsListPage> {
-  final TextEditingController _searchController = TextEditingController();
-  String _searchQuery = '';
+class _AdminsListView extends StatefulWidget {
+  const _AdminsListView({required this.adminType});
+
+  final AdminType adminType;
 
   @override
-  void initState() {
-    super.initState();
-    context.read<AdminsCubit>().loadAdmins();
-  }
+  State<_AdminsListView> createState() => _AdminsListViewState();
+}
+
+class _AdminsListViewState extends State<_AdminsListView> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   @override
   void dispose() {
@@ -96,7 +105,7 @@ class _AdminsListPageState extends State<AdminsListPage> {
                         'Admin Name',
                         'Email Address',
                         'Role / Permission',
-                        'Status'
+                        'Status',
                       ],
                       rows: filteredAdmins.map((admin) {
                         return [

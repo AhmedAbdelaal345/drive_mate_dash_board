@@ -4,17 +4,17 @@ enum PostCategory { question, marketplace, tip, discussion, report, other }
 
 extension PostCategoryLabel on PostCategory {
   String get label => switch (this) {
-        PostCategory.question => 'Question',
-        PostCategory.marketplace => 'Marketplace',
-        PostCategory.tip => 'Tip',
-        PostCategory.discussion => 'Discussion',
-        PostCategory.report => 'Report',
-        PostCategory.other => 'Other',
-      };
+    PostCategory.question => 'Question',
+    PostCategory.marketplace => 'Marketplace',
+    PostCategory.tip => 'Tip',
+    PostCategory.discussion => 'Discussion',
+    PostCategory.report => 'Report',
+    PostCategory.other => 'Other',
+  };
 
-  static PostCategory fromString(String value) {
+  static PostCategory fromApi(String value) {
     return PostCategory.values.firstWhere(
-      (e) => e.label.toLowerCase() == value.toLowerCase(),
+      (e) => e.name.toLowerCase() == value.toLowerCase(),
       orElse: () => PostCategory.other,
     );
   }
@@ -24,11 +24,19 @@ enum CommunityFilter { all, reported, flagged, deleted }
 
 extension CommunityFilterLabel on CommunityFilter {
   String get label => switch (this) {
-        CommunityFilter.all => 'All',
-        CommunityFilter.reported => 'Reported',
-        CommunityFilter.flagged => 'Flagged',
-        CommunityFilter.deleted => 'Deleted',
-      };
+    CommunityFilter.all => 'All',
+    CommunityFilter.reported => 'Reported',
+    CommunityFilter.flagged => 'Flagged',
+    CommunityFilter.deleted => 'Deleted',
+  };
+
+  /// Value sent as `statusFilter` query parameter to the API.
+  String get apiValue => switch (this) {
+    CommunityFilter.all => '',
+    CommunityFilter.reported => 'reported',
+    CommunityFilter.flagged => 'flagged',
+    CommunityFilter.deleted => 'deleted',
+  };
 }
 
 class CommunityPost {
@@ -48,26 +56,15 @@ class CommunityPost {
   final String content;
   final PostStatus status;
 
-  CommunityPost copyWith({PostStatus? status}) {
-    return CommunityPost(
-      id: id,
-      author: author,
-      timeAgo: timeAgo,
-      category: category,
-      content: content,
-      status: status ?? this.status,
-    );
-  }
-
   factory CommunityPost.fromJson(Map<String, dynamic> json) {
     return CommunityPost(
-      id: json['id'] as String,
-      author: json['author'] as String,
-      timeAgo: json['time_ago'] as String,
-      category: PostCategoryLabel.fromString(json['category'] as String),
-      content: json['content'] as String,
+      id: json['id'] as String? ?? '',
+      author: json['authorName'] as String? ?? json['author'] as String? ?? '',
+      timeAgo: json['timeAgo'] as String? ?? json['createdAt'] as String? ?? '',
+      category: PostCategoryLabel.fromApi(json['category'] as String? ?? ''),
+      content: json['content'] as String? ?? '',
       status: PostStatus.values.firstWhere(
-        (e) => e.name == (json['status'] as String).toLowerCase(),
+        (e) => e.name == (json['status'] as String? ?? 'active').toLowerCase(),
         orElse: () => PostStatus.active,
       ),
     );

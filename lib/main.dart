@@ -31,15 +31,15 @@ class DriverMateDashboardApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => AuthCubit()),
-        BlocProvider(create: (_) => DashboardCubit(DashboardRepo())..load()),
-        BlocProvider(create: (_) => CarsCubit(CarsRepo())..loadCars()),
+        BlocProvider(create: (_) => DashboardCubit(DashboardRepo())),
+        BlocProvider(create: (_) => CarsCubit(CarsRepo())),
         BlocProvider(
           create: (_) =>
               ServiceCentersCubit(ServiceCentersRepo())..loadCenters(),
         ),
-        BlocProvider(create: (_) => TipsCubit(TipsRepo())..loadTips()),
-        BlocProvider(create: (_) => UsersCubit(UsersRepoImpl())..loadUsers()),
-        BlocProvider(create: (_) => AdminsCubit(AdminsRepo())..loadAdmins()),
+        BlocProvider(create: (_) => TipsCubit(TipsRepoImpl())..loadTips()),
+        BlocProvider(create: (_) => UsersCubit(UsersRepoImpl())),
+        BlocProvider(create: (_) => AdminsCubit(AdminsRepoImpl())..loadAdmins()),
         BlocProvider(create: (_) => ReportsCubit(ReportsRepo())..loadReports()),
       ],
       child: MaterialApp(
@@ -52,3 +52,5 @@ class DriverMateDashboardApp extends StatelessWidget {
     );
   }
 }
+
+

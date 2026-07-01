@@ -28,8 +28,6 @@ class CommunityPage extends StatelessWidget {
   }
 }
 
-// ── Internal view ──────────────────────────────────────────────────────────
-
 class _CommunityView extends StatefulWidget {
   const _CommunityView({required this.adminType});
 
@@ -56,7 +54,6 @@ class _CommunityViewState extends State<_CommunityView> {
       adminType: widget.adminType,
       child: BlocBuilder<CommunityCubit, CommunityState>(
         builder: (context, state) {
-          // Resolve filter and posts from any non-initial state
           final filter = switch (state) {
             CommunityLoaded(:final filter) => filter,
             CommunityActionLoading(:final filter) => filter,
@@ -77,7 +74,6 @@ class _CommunityViewState extends State<_CommunityView> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Search + filter icon row
               Row(
                 children: [
                   Expanded(
@@ -88,17 +84,11 @@ class _CommunityViewState extends State<_CommunityView> {
                           context.read<CommunityCubit>().search(v),
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  _iconBtn(Icons.filter_list_rounded),
                 ],
               ),
               const SizedBox(height: 14),
-
-              // Filter tabs
               _FilterTabs(selected: filter),
               const SizedBox(height: 16),
-
-              // Body
               if (state is CommunityLoading)
                 const LoadingWidget()
               else if (state is CommunityError)
@@ -106,8 +96,7 @@ class _CommunityViewState extends State<_CommunityView> {
               else if (posts.isEmpty)
                 const EmptyStateWidget(
                   title: 'No Posts Found',
-                  message:
-                      'There are no posts matching the current filter.',
+                  message: 'There are no posts matching the current filter.',
                 )
               else
                 ...posts.map(
@@ -116,7 +105,6 @@ class _CommunityViewState extends State<_CommunityView> {
                     isActionLoading: actionPostId == p.id,
                   ),
                 ),
-
               const SizedBox(height: 16),
             ],
           );
@@ -124,25 +112,7 @@ class _CommunityViewState extends State<_CommunityView> {
       ),
     );
   }
-
-  Widget _iconBtn(IconData icon) {
-    return Container(
-      height: 52,
-      width: 52,
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: IconButton(
-        icon: Icon(icon, color: AppColors.muted, size: 20),
-        onPressed: () {},
-      ),
-    );
-  }
 }
-
-// ── Filter tabs ────────────────────────────────────────────────────────────
 
 class _FilterTabs extends StatelessWidget {
   const _FilterTabs({required this.selected});
@@ -185,8 +155,7 @@ class _FilterTabs extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: isSel ? AppColors.text : AppColors.muted,
-                    fontWeight:
-                        isSel ? FontWeight.w800 : FontWeight.w500,
+                    fontWeight: isSel ? FontWeight.w800 : FontWeight.w500,
                     fontSize: 13,
                   ),
                 ),
@@ -198,8 +167,6 @@ class _FilterTabs extends StatelessWidget {
     );
   }
 }
-
-// ── Post card ──────────────────────────────────────────────────────────────
 
 class _PostCard extends StatelessWidget {
   const _PostCard({required this.post, required this.isActionLoading});
@@ -240,7 +207,6 @@ class _PostCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Author row
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -248,7 +214,9 @@ class _PostCard extends StatelessWidget {
                     radius: 20,
                     backgroundColor: AppColors.softBlue,
                     child: Text(
-                      post.author[0].toUpperCase(),
+                      post.author.isNotEmpty
+                          ? post.author[0].toUpperCase()
+                          : '?',
                       style: const TextStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.w900,
@@ -283,8 +251,6 @@ class _PostCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 12),
-
-              // Category chip
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 10,
@@ -293,9 +259,7 @@ class _PostCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: catColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
-                  border: Border.all(
-                    color: catColor.withValues(alpha: 0.25),
-                  ),
+                  border: Border.all(color: catColor.withValues(alpha: 0.25)),
                 ),
                 child: Text(
                   post.category.label,
@@ -307,8 +271,6 @@ class _PostCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 10),
-
-              // Content
               Text(
                 post.content,
                 style: const TextStyle(
@@ -318,8 +280,6 @@ class _PostCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 14),
-
-              // Action row
               if (isActionLoading)
                 const Center(
                   child: SizedBox(
@@ -341,8 +301,6 @@ class _PostCard extends StatelessWidget {
   }
 }
 
-// ── Action row ─────────────────────────────────────────────────────────────
-
 class _ActionRow extends StatelessWidget {
   const _ActionRow({required this.post});
 
@@ -360,12 +318,6 @@ class _ActionRow extends StatelessWidget {
           onTap: () => _showDetail(context),
         ),
         const SizedBox(width: 10),
-        if (post.status != PostStatus.flagged)
-          _Btn(
-            icon: Icons.flag_outlined,
-            color: Colors.orange.shade600,
-            onTap: () => cubit.flagPost(post.id),
-          ),
         if (post.status == PostStatus.flagged)
           _Btn(
             icon: Icons.check_circle_outline,
@@ -416,10 +368,7 @@ class _ActionRow extends StatelessWidget {
               Navigator.pop(context);
               cubit.deletePost(post.id);
             },
-            child: Text(
-              'Delete',
-              style: TextStyle(color: Colors.red.shade600),
-            ),
+            child: Text('Delete', style: TextStyle(color: Colors.red.shade600)),
           ),
         ],
       ),
@@ -428,11 +377,7 @@ class _ActionRow extends StatelessWidget {
 }
 
 class _Btn extends StatelessWidget {
-  const _Btn({
-    required this.icon,
-    required this.color,
-    required this.onTap,
-  });
+  const _Btn({required this.icon, required this.color, required this.onTap});
 
   final IconData icon;
   final Color color;
@@ -450,8 +395,6 @@ class _Btn extends StatelessWidget {
     );
   }
 }
-
-// ── Error + retry ──────────────────────────────────────────────────────────
 
 class _ErrorRetry extends StatelessWidget {
   const _ErrorRetry({required this.message});

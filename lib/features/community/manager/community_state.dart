@@ -4,15 +4,15 @@ sealed class CommunityState {
   const CommunityState();
 }
 
-final class CommunityInitial extends CommunityState {
+class CommunityInitial extends CommunityState {
   const CommunityInitial();
 }
 
-final class CommunityLoading extends CommunityState {
+class CommunityLoading extends CommunityState {
   const CommunityLoading();
 }
 
-final class CommunityLoaded extends CommunityState {
+class CommunityLoaded extends CommunityState {
   const CommunityLoaded({
     required this.posts,
     required this.filter,
@@ -24,14 +24,14 @@ final class CommunityLoaded extends CommunityState {
   final String query;
 }
 
-final class CommunityError extends CommunityState {
+class CommunityError extends CommunityState {
   const CommunityError(this.message);
 
   final String message;
 }
 
-/// Emitted while a single post action (flag / approve / delete) is in flight.
-final class CommunityActionLoading extends CommunityState {
+/// Emitted while a single post action (approve / delete) is in flight.
+class CommunityActionLoading extends CommunityState {
   const CommunityActionLoading({
     required this.posts,
     required this.filter,

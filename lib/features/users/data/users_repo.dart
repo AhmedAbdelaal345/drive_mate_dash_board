@@ -1,3 +1,4 @@
+import 'package:drive_mate_dash_board/core/network/api_helper.dart';
 import 'package:drive_mate_dash_board/features/users/data/model/user_model.dart';
 
 abstract class UsersRepo {
@@ -9,137 +10,76 @@ abstract class UsersRepo {
 }
 
 class UsersRepoImpl implements UsersRepo {
-  // final Dio _dio;
-  // UsersRepoImpl(this._dio);
+  UsersRepoImpl({this.pageSize = 10});
+
+  final int pageSize;
 
   @override
   Future<List<AppUser>> fetchUsers({String? query, int page = 1}) async {
-    // TODO: replace with real API call:
-    // final res = await _dio.get('/users', queryParameters: {
-    //   'page': page,
-    //   if (query != null && query.isNotEmpty) 'q': query,
-    // });
-    // return (res.data['users'] as List)
-    //     .map((e) => AppUser.fromJson(e as Map<String, dynamic>))
-    //     .toList();
+    final response = await ApiHelper().getRequest(
+      endpoint: 'admin/users',
+      isAuthorized: true,
+      queryParameters: {
+        'pageNumber': page,
+        'pageSize': pageSize,
+        'searchTerm': query?.trim() ?? '',
+      },
+    );
 
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    var users = _mockUsers;
-
-    if (query != null && query.isNotEmpty) {
-      final q = query.toLowerCase();
-      users = users
-          .where(
-            (u) =>
-                u.name.toLowerCase().contains(q) ||
-                u.email.toLowerCase().contains(q),
-          )
+    if (response.data is List) {
+      return (response.data as List)
+          .map((e) => AppUser.fromJson(Map<String, dynamic>.from(e as Map)))
           .toList();
     }
 
-    return users;
+    return <AppUser>[];
   }
 
   @override
   Future<UsersStats> fetchStats() async {
-    // TODO: await _dio.get('/users/stats')
-    await Future.delayed(const Duration(milliseconds: 300));
-    return const UsersStats(total: 50, active: 41, banned: 5);
+    final response = await ApiHelper().getRequest(
+      endpoint: 'admin/users/stats',
+      isAuthorized: true,
+    );
+
+    if (response.data is Map) {
+      return UsersStats.fromJson(
+        Map<String, dynamic>.from(response.data as Map),
+      );
+    }
+
+    return const UsersStats(total: 0, active: 0, banned: 0);
   }
 
   @override
-  Future<void> banUser(String userId) async {
-    // TODO: await _dio.patch('/users/$userId/ban');
-    await Future.delayed(const Duration(milliseconds: 300));
-  }
+  Future<void> banUser(String userId) => _toggleActive(userId);
 
   @override
-  Future<void> unbanUser(String userId) async {
-    // TODO: await _dio.patch('/users/$userId/unban');
-    await Future.delayed(const Duration(milliseconds: 300));
-  }
+  Future<void> unbanUser(String userId) => _toggleActive(userId);
 
   @override
   Future<void> deleteUser(String userId) async {
-    // TODO: await _dio.delete('/users/$userId');
-    await Future.delayed(const Duration(milliseconds: 300));
+    await ApiHelper().deleteRequest(
+      endpoint: 'admin/users/$userId',
+      isAuthorized: true,
+      isForm: false,
+    );
   }
 
-  // ── Mock data ──────────────────────────────────────────────────────────────
-
-  static const List<AppUser> _mockUsers = [
-    AppUser(
-      id: 'u1',
-      name: 'Ali Fahad',
-      email: 'ali.fahad24@example.com',
-      joinDate: '6/16/2026',
-      carsCount: 0,
-      status: UserStatus.active,
-      role: UserRole.user,
-    ),
-    AppUser(
-      id: 'u2',
-      name: 'Khalid Al-Sayed',
-      email: 'khalid.al-sayed36@example.com',
-      joinDate: '6/14/2026',
-      carsCount: 1,
-      status: UserStatus.active,
-      role: UserRole.centerAdmin,
-    ),
-    AppUser(
-      id: 'u3',
-      name: 'Sara Mahmoud',
-      email: 'sara.mahmoud14@example.com',
-      joinDate: '6/13/2026',
-      carsCount: 0,
-      status: UserStatus.active,
-      role: UserRole.user,
-    ),
-    AppUser(
-      id: 'u4',
-      name: 'Ali Al-Sayed',
-      email: 'ali.al-sayed4@example.com',
-      joinDate: '6/12/2026',
-      carsCount: 1,
-      status: UserStatus.active,
-      role: UserRole.user,
-    ),
-    AppUser(
-      id: 'u5',
-      name: 'Mohamed Abdullah',
-      email: 'mohamed.a@example.com',
-      joinDate: '6/10/2026',
-      carsCount: 2,
-      status: UserStatus.suspended,
-      role: UserRole.user,
-    ),
-    AppUser(
-      id: 'u6',
-      name: 'Fatima Al Zahra',
-      email: 'fatima.z@example.com',
-      joinDate: '6/8/2026',
-      carsCount: 3,
-      status: UserStatus.active,
-      role: UserRole.user,
-    ),
-    AppUser(
-      id: 'u7',
-      name: 'Hassan Nour',
-      email: 'hassan.n@example.com',
-      joinDate: '6/5/2026',
-      carsCount: 0,
-      status: UserStatus.banned,
-      role: UserRole.user,
-    ),
-    AppUser(
-      id: 'u8',
-      name: 'Rania Ibrahim',
-      email: 'rania.i@example.com',
-      joinDate: '6/3/2026',
-      carsCount: 1,
-      status: UserStatus.active,
-      role: UserRole.centerAdmin,
-    ),
-  ];
+  Future<void> _toggleActive(String userId) async {
+    try {
+      await ApiHelper().putRequest(
+        endpoint: 'admin/users/$userId/toggle-active',
+        isAuthorized: true,
+        isForm: false,
+      );
+    } on Exception catch (e) {
+      if (e.toString() != '404') rethrow;
+      await ApiHelper().postRequest(
+        endpoint: 'admin/users/$userId/toggle-active',
+        isAuthorized: true,
+        isForm: false,
+      );
+    }
+  }
 }

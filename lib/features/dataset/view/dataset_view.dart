@@ -102,15 +102,11 @@ class _DatasetsViewState extends State<_DatasetsView> {
                     child: CustomSearchField(
                       hintText: 'Search samples...',
                       controller: _searchController,
-                      onChanged: (v) =>
-                          context.read<DatasetsCubit>().search(v),
+                      onChanged: (v) => context.read<DatasetsCubit>().search(v),
                     ),
                   ),
                   const SizedBox(width: 10),
-                  _IconBtn(
-                    icon: Icons.filter_list_rounded,
-                    onTap: () {},
-                  ),
+                  _IconBtn(icon: Icons.filter_list_rounded, onTap: () {}),
                 ],
               ),
               const SizedBox(height: 16),
@@ -136,8 +132,7 @@ class _DatasetsViewState extends State<_DatasetsView> {
                   TextButton.icon(
                     onPressed: isExporting
                         ? null
-                        : () =>
-                            context.read<DatasetsCubit>().exportMetadata(),
+                        : () => context.read<DatasetsCubit>().exportMetadata(),
                     icon: isExporting
                         ? const SizedBox(
                             width: 14,
@@ -285,9 +280,7 @@ class _StatCard extends StatelessWidget {
             Text(
               value,
               style: TextStyle(
-                color: dark
-                    ? Colors.white
-                    : (valueColor ?? AppColors.text),
+                color: dark ? Colors.white : (valueColor ?? AppColors.text),
                 fontSize: 26,
                 fontWeight: FontWeight.w900,
               ),
@@ -302,10 +295,7 @@ class _StatCard extends StatelessWidget {
 // ── Sample card ────────────────────────────────────────────────────────────
 
 class _SampleCard extends StatelessWidget {
-  const _SampleCard({
-    required this.sample,
-    required this.isActionLoading,
-  });
+  const _SampleCard({required this.sample, required this.isActionLoading});
 
   final AudioSample sample;
   final bool isActionLoading;

@@ -49,12 +49,18 @@ class UsersCubit extends Cubit<UsersState> {
 
   Future<void> banUser(String userId) => _userAction(
         userId: userId,
-        action: () => _repo.banUser(userId),
+        action: () async {
+          await _repo.banUser(userId);
+          await loadUsers();
+        },
       );
 
   Future<void> unbanUser(String userId) => _userAction(
         userId: userId,
-        action: () => _repo.unbanUser(userId),
+        action: () async {
+          await _repo.unbanUser(userId);
+          await loadUsers();
+        },
       );
 
   Future<void> deleteUser(String userId) => _userAction(

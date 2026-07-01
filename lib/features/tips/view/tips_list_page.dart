@@ -8,29 +8,38 @@ import 'package:drive_mate_dash_board/core/widgets/empty_state_widget.dart';
 import 'package:drive_mate_dash_board/core/widgets/loading_widget.dart';
 import 'package:drive_mate_dash_board/core/widgets/status_badge.dart';
 import 'package:drive_mate_dash_board/features/auth/data/model/auth_model.dart';
+import 'package:drive_mate_dash_board/features/tips/data/tips_repo.dart';
 import 'package:drive_mate_dash_board/features/tips/manager/tips_cubit.dart';
 import 'package:drive_mate_dash_board/features/tips/manager/tips_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class TipsListPage extends StatefulWidget {
+class TipsListPage extends StatelessWidget {
   const TipsListPage({super.key, required this.adminType});
 
   final AdminType adminType;
 
   @override
-  State<TipsListPage> createState() => _TipsListPageState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => TipsCubit(TipsRepoImpl())..loadTips(),
+      child: _TipsListView(adminType: adminType),
+    );
+  }
 }
 
-class _TipsListPageState extends State<TipsListPage> {
-  final TextEditingController _searchController = TextEditingController();
-  String _searchQuery = '';
+class _TipsListView extends StatefulWidget {
+  const _TipsListView({required this.adminType});
+
+  final AdminType adminType;
 
   @override
-  void initState() {
-    super.initState();
-    context.read<TipsCubit>().loadTips();
-  }
+  State<_TipsListView> createState() => _TipsListViewState();
+}
+
+class _TipsListViewState extends State<_TipsListView> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   @override
   void dispose() {
@@ -88,7 +97,9 @@ class _TipsListPageState extends State<TipsListPage> {
               } else if (state is TipsSuccess) {
                 final filtered = state.tips.where((tip) {
                   return tip.title.toLowerCase().contains(_searchQuery) ||
-                      tip.category.toLowerCase().contains(_searchQuery);
+                      (tip.category ?? 'Tip').toLowerCase().contains(
+                        _searchQuery,
+                      );
                 }).toList();
 
                 if (filtered.isEmpty) {
@@ -109,7 +120,7 @@ class _TipsListPageState extends State<TipsListPage> {
                         'Views',
                         'Likes',
                         'Status',
-                        'Actions'
+                        'Actions',
                       ],
                       rows: filtered.map((tip) {
                         return [
@@ -117,25 +128,35 @@ class _TipsListPageState extends State<TipsListPage> {
                             tip.title,
                             style: const TextStyle(fontWeight: FontWeight.w700),
                           ),
-                          Text(tip.category),
-                          Text(tip.difficulty),
-                          Text(tip.duration),
-                          Text('${tip.views}'),
-                          Text('${tip.likes}'),
-                          StatusBadge(label: tip.status),
+                          Text(tip.category ?? "Tip"),
+                          Text(tip.content),
+                          Text(tip.createdAt.toString()),
+                          Text('${tip.authorName}'),
+                          Text('${tip.isPublished}'),
+                          StatusBadge(label: tip.isPublished.toString()),
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                icon:
-                                    const Icon(Icons.edit, color: Colors.blue),
+                                icon: const Icon(
+                                  Icons.edit,
+                                  color: Colors.blue,
+                                ),
                                 onPressed: () {
                                   Navigator.pushNamed(
                                     context,
                                     RouteNames.editTip,
-                                    arguments: {'id': tip.title},
+                                    arguments: {'id': tip.id},
                                   );
                                 },
+                              ),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.delete_outline,
+                                  color: Colors.red,
+                                ),
+                                onPressed: () =>
+                                    _confirmDelete(context, tip.id),
                               ),
                             ],
                           ),
@@ -149,6 +170,30 @@ class _TipsListPageState extends State<TipsListPage> {
               }
               return const SizedBox.shrink();
             },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmDelete(BuildContext context, String id) {
+    final cubit = context.read<TipsCubit>();
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Delete Tip'),
+        content: const Text('Are you sure you want to delete this tip?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              //TODO: cubit.deleteTip(id);
+              Navigator.pop(context);
+            },
+            child: Text('Delete', style: TextStyle(color: Colors.red.shade600)),
           ),
         ],
       ),

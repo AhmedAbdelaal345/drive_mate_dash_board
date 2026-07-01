@@ -57,6 +57,9 @@ class _CentersListPageState extends State<CentersListPage> {
                     setState(() {
                       _searchQuery = value.toLowerCase();
                     });
+                    context
+                        .read<ServiceCentersCubit>()
+                        .loadCenters(searchTerm: value);
                   },
                 ),
               ),

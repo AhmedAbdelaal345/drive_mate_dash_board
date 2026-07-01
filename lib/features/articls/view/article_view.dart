@@ -219,6 +219,39 @@ class _IconBtn extends StatelessWidget {
   }
 }
 
+class _EmptyAnalyticsCard extends StatelessWidget {
+  const _EmptyAnalyticsCard({required this.title, required this.message});
+
+  final String title;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return CardSurface(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                color: AppColors.text,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              message,
+              style: const TextStyle(color: AppColors.muted),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 // ── Highlight 2×2 grid ─────────────────────────────────────────────────────
 
 class _HighlightGrid extends StatelessWidget {
@@ -311,8 +344,16 @@ class _TopCarsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (entries.isEmpty) {
+      return const _EmptyAnalyticsCard(
+        title: 'Top Added Cars',
+        message: 'No car analytics for this period.',
+      );
+    }
+
     final max =
         entries.map((e) => e.count).reduce((a, b) => a > b ? a : b);
+    final safeMax = max == 0 ? 1 : max;
 
     return CardSurface(
       child: Padding(
@@ -337,7 +378,7 @@ class _TopCarsCard extends StatelessWidget {
             const SizedBox(height: 16),
             ...entries.asMap().entries.map((e) {
               final car = e.value;
-              final frac = car.count / max;
+              final frac = car.count / safeMax;
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Row(
@@ -496,8 +537,16 @@ class _TopServiceCentersCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (centers.isEmpty) {
+      return const _EmptyAnalyticsCard(
+        title: 'Top Service Centers',
+        message: 'No service center analytics for this period.',
+      );
+    }
+
     final maxVisits =
         centers.map((c) => c.visits).reduce((a, b) => a > b ? a : b);
+    final safeMaxVisits = maxVisits == 0 ? 1 : maxVisits;
 
     return CardSurface(
       child: Padding(
@@ -568,7 +617,7 @@ class _TopServiceCentersCard extends StatelessWidget {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(4),
                       child: LinearProgressIndicator(
-                        value: c.bookings / maxVisits,
+                        value: c.bookings / safeMaxVisits,
                         backgroundColor: AppColors.border,
                         color: Colors.blue.shade600,
                         minHeight: 7,
@@ -578,7 +627,7 @@ class _TopServiceCentersCard extends StatelessWidget {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(4),
                       child: LinearProgressIndicator(
-                        value: c.emergency / maxVisits,
+                        value: c.emergency / safeMaxVisits,
                         backgroundColor: AppColors.border,
                         color: Colors.red.shade400,
                         minHeight: 7,
@@ -770,3 +819,4 @@ class _AudioStat extends StatelessWidget {
     );
   }
 }
+

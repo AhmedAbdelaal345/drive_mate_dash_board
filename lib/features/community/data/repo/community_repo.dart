@@ -1,137 +1,81 @@
+import 'package:dartz/dartz.dart';
+import 'package:drive_mate_dash_board/core/network/api_helper.dart';
 import 'package:drive_mate_dash_board/features/community/data/model/community_model.dart';
 
+import 'package:drive_mate_dash_board/core/models/api_response.dart';
+
 abstract class CommunityRepo {
-  Future<List<CommunityPost>> fetchPosts({
-    CommunityFilter filter,
-    String? query,
+  Future<Either<String, List<CommunityPost>>> fetchPosts({
+    int pageNumber = 1,
+    int pageSize = 10,
+    String searchTerm = '',
+    CommunityFilter filter = CommunityFilter.all,
   });
-  Future<void> flagPost(String postId);
-  Future<void> approvePost(String postId);
-  Future<void> deletePost(String postId);
+
+  Future<ApiResponse> approvePost(String postId);
+
+  Future<ApiResponse> deletePost(String postId);
 }
 
 class CommunityRepoImpl implements CommunityRepo {
-  // final Dio _dio;
-  // CommunityRepoImpl(this._dio);
+  CommunityRepoImpl({ApiHelper? apiHelper}) : _api = apiHelper ?? ApiHelper();
+
+  final ApiHelper _api;
+
+  static const String _baseEndpoint = 'admin/community/posts';
 
   @override
-  Future<List<CommunityPost>> fetchPosts({
+  Future<Either<String, List<CommunityPost>>> fetchPosts({
+    int pageNumber = 1,
+    int pageSize = 10,
+    String searchTerm = '',
     CommunityFilter filter = CommunityFilter.all,
-    String? query,
   }) async {
-    // TODO: replace with real API call:
-    // final res = await _dio.get('/community/posts', queryParameters: {
-    //   'filter': filter.name,
-    //   if (query != null && query.isNotEmpty) 'q': query,
-    // });
-    // return (res.data as List)
-    //     .map((e) => CommunityPost.fromJson(e as Map<String, dynamic>))
-    //     .toList();
+    try {
+      final result = await _api.getRequest(
+        endpoint: _baseEndpoint,
+        isAuthorized: true,
+        queryParameters: {
+          'pageNumber': pageNumber,
+          'pageSize': pageSize,
+          'searchTerm': searchTerm,
+          'statusFilter': filter.apiValue,
+        },
+        // dataParser: (data) => (data as List? ?? [])
+        //     .map(
+        //       (e) => CommunityPost.fromJson(Map<String, dynamic>.from(e as Map)),
+        //     )
+        //     .toList(),
+      );
+      if (!result.status) {
+        return Left(result.message);
+      }
 
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    var posts = _mockPosts;
-
-    // Apply filter
-    posts = switch (filter) {
-      CommunityFilter.all => posts,
-      CommunityFilter.reported =>
-        posts.where((p) => p.category == PostCategory.report).toList(),
-      CommunityFilter.flagged =>
-        posts.where((p) => p.status == PostStatus.flagged).toList(),
-      CommunityFilter.deleted =>
-        posts.where((p) => p.status == PostStatus.deleted).toList(),
-    };
-
-    // Apply search
-    if (query != null && query.isNotEmpty) {
-      final q = query.toLowerCase();
-      posts = posts
-          .where(
-            (p) =>
-                p.author.toLowerCase().contains(q) ||
-                p.content.toLowerCase().contains(q) ||
-                p.category.label.toLowerCase().contains(q),
+      final posts = (result.data as List)
+          .map(
+            (e) => CommunityPost.fromJson(Map<String, dynamic>.from(e as Map)),
           )
           .toList();
+
+      return Right(posts);
+    } on Exception catch (e) {
+      return Left(e.toString());
     }
-
-    return posts;
   }
 
   @override
-  Future<void> flagPost(String postId) async {
-    // TODO: await _dio.patch('/community/posts/$postId/flag');
-    await Future.delayed(const Duration(milliseconds: 300));
+  Future<ApiResponse> approvePost(String postId) {
+    return _api.postRequest(
+      endpoint: '$_baseEndpoint/$postId/approve',
+      isAuthorized: true,
+    );
   }
 
   @override
-  Future<void> approvePost(String postId) async {
-    // TODO: await _dio.patch('/community/posts/$postId/approve');
-    await Future.delayed(const Duration(milliseconds: 300));
+  Future<ApiResponse> deletePost(String postId) {
+    return _api.deleteRequest(
+      endpoint: '$_baseEndpoint/$postId',
+      isAuthorized: true,
+    );
   }
-
-  @override
-  Future<void> deletePost(String postId) async {
-    // TODO: await _dio.delete('/community/posts/$postId');
-    await Future.delayed(const Duration(milliseconds: 300));
-  }
-
-  // ── Mock data ──────────────────────────────────────────────────────────────
-
-  static const List<CommunityPost> _mockPosts = [
-    CommunityPost(
-      id: '1',
-      author: 'Sarah Jenkins',
-      timeAgo: '2 hours ago',
-      category: PostCategory.question,
-      content:
-          'Has anyone experienced a rattling noise when accelerating past 60mph in the new 2024 model? It sounds like it is coming from the passenger side.',
-      status: PostStatus.active,
-    ),
-    CommunityPost(
-      id: '2',
-      author: 'Mike Chen',
-      timeAgo: '5 hours ago',
-      category: PostCategory.marketplace,
-      content:
-          'Selling my 2020 OEM rims. Great condition, no scratches. \$400 for the set. Pickup only in Downtown area.',
-      status: PostStatus.flagged,
-    ),
-    CommunityPost(
-      id: '3',
-      author: 'DriveMate Bot',
-      timeAgo: '1 day ago',
-      category: PostCategory.tip,
-      content:
-          'Weekly Maintenance Tip: Check your tire pressure every Sunday night to ensure optimal fuel efficiency for the week ahead!',
-      status: PostStatus.active,
-    ),
-    CommunityPost(
-      id: '4',
-      author: 'Omar Al Rashidi',
-      timeAgo: '1 day ago',
-      category: PostCategory.discussion,
-      content:
-          'Anyone know a good mechanic in Abu Dhabi for Tesla servicing? The official center has a 3 week wait.',
-      status: PostStatus.active,
-    ),
-    CommunityPost(
-      id: '5',
-      author: 'Layla Hassan',
-      timeAgo: '2 days ago',
-      category: PostCategory.report,
-      content:
-          'This user is posting fake car listings with stolen photos. Third time this week.',
-      status: PostStatus.flagged,
-    ),
-    CommunityPost(
-      id: '6',
-      author: 'Ahmed Karim',
-      timeAgo: '3 days ago',
-      category: PostCategory.marketplace,
-      content: 'Removed — violated community selling guidelines.',
-      status: PostStatus.deleted,
-    ),
-  ];
 }

@@ -11,22 +11,23 @@ class CommunityCubit extends Cubit<CommunityState> {
   CommunityFilter _filter = CommunityFilter.all;
   String _query = '';
 
-  CommunityFilter get currentFilter => _filter;
-  String get currentQuery => _query;
-
-  // ── Fetch ──────────────────────────────────────────────────────────────────
-
   Future<void> loadPosts() async {
     emit(const CommunityLoading());
     try {
-      final posts = await _repo.fetchPosts(filter: _filter, query: _query);
-      emit(CommunityLoaded(posts: posts, filter: _filter, query: _query));
+      final response = await _repo.fetchPosts(
+        searchTerm: _query,
+        filter: _filter,
+      );
+      emit(
+        response.fold(
+          (l) => CommunityError(l),
+          (r) => CommunityLoaded(posts: r, filter: _filter, query: _query),
+        ),
+      );
     } catch (e) {
       emit(CommunityError(e.toString()));
     }
   }
-
-  // ── Filter & search ────────────────────────────────────────────────────────
 
   Future<void> changeFilter(CommunityFilter filter) async {
     _filter = filter;
@@ -38,41 +39,32 @@ class CommunityCubit extends Cubit<CommunityState> {
     await loadPosts();
   }
 
-  // ── Post actions ───────────────────────────────────────────────────────────
+  Future<void> approvePost(String postId) =>
+      _runAction(postId: postId, action: () => _repo.approvePost(postId));
 
-  Future<void> flagPost(String postId) => _postAction(
-        postId: postId,
-        action: () => _repo.flagPost(postId),
-      );
+  Future<void> deletePost(String postId) =>
+      _runAction(postId: postId, action: () => _repo.deletePost(postId));
 
-  Future<void> approvePost(String postId) => _postAction(
-        postId: postId,
-        action: () => _repo.approvePost(postId),
-      );
-
-  Future<void> deletePost(String postId) => _postAction(
-        postId: postId,
-        action: () => _repo.deletePost(postId),
-      );
-
-  Future<void> _postAction({
+  Future<void> _runAction({
     required String postId,
     required Future<void> Function() action,
   }) async {
     final current = state;
     if (current is! CommunityLoaded) return;
 
-    emit(CommunityActionLoading(
-      posts: current.posts,
-      filter: current.filter,
-      query: current.query,
-      postId: postId,
-    ));
+    emit(
+      CommunityActionLoading(
+        posts: current.posts,
+        filter: current.filter,
+        query: current.query,
+        postId: postId,
+      ),
+    );
 
     try {
       await action();
-      await loadPosts(); // refresh list from server
-    } catch (e) {
+      await loadPosts();
+    } on Exception catch (e) {
       emit(CommunityError(e.toString()));
     }
   }

@@ -13,10 +13,10 @@ class AuthCubit extends Cubit<AuthState> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  void login() {
+  Future<void> login() async {
     emit(AuthStateLoading());
     try {
-      Either<String, AdminType> result = repo.login(
+      final Either<String, AdminType> result = await repo.login(
         email: emailController.text,
         password: passwordController.text,
       );

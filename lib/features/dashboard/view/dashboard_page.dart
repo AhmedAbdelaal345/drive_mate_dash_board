@@ -6,6 +6,10 @@ import 'package:drive_mate_dash_board/core/widgets/dashboard_shell.dart';
 import 'package:drive_mate_dash_board/features/auth/manager/auth_cubit.dart';
 import 'package:drive_mate_dash_board/features/auth/manager/auth_state.dart';
 import 'package:drive_mate_dash_board/features/auth/data/model/auth_model.dart';
+import 'package:drive_mate_dash_board/features/dashboard/manager/dashboard_cubit.dart';
+import 'package:drive_mate_dash_board/features/dashboard/manager/dashboard_state.dart';
+import 'package:drive_mate_dash_board/features/dashboard/data/model/dashboard_metric_model.dart';
+import 'package:drive_mate_dash_board/features/dashboard/data/model/activity_item_model.dart';
 import 'package:drive_mate_dash_board/shared/mock_data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,6 +22,16 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<DashboardCubit>().load();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = context.watch<AuthCubit>().state;
@@ -36,55 +50,72 @@ class _DashboardPageState extends State<DashboardPage> {
       title: 'Dashboard',
       selectedRoute: RouteNames.dashboard,
       adminType: adminType,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // GREETING BANNER
-          _buildWelcomeBanner(adminType),
-          const SizedBox(height: 24),
+      child: BlocBuilder<DashboardCubit, DashboardState>(
+        builder: (context, state) {
+          final metrics = state is DashboardSuccess ? state.metrics : <DashboardMetricModel>[];
+          final activities = state is DashboardSuccess ? state.activities : <ActivityItemModel>[];
 
-          // METRICS GRID (Responsive)
-          const Text(
-            'SYSTEM PERFORMANCE',
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              color: AppColors.muted,
-              letterSpacing: 0.8,
-            ),
-          ),
-          const SizedBox(height: 12),
-          _buildMetricsGrid(adminType),
-          const SizedBox(height: 28),
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // GREETING BANNER
+              _buildWelcomeBanner(adminType),
+              const SizedBox(height: 24),
 
-          // QUICK ACTIONS
-          const Text(
-            'QUICK ACTIONS',
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              color: AppColors.muted,
-              letterSpacing: 0.8,
-            ),
-          ),
-          const SizedBox(height: 12),
-          _buildQuickActions(adminType),
-          const SizedBox(height: 28),
+              // SYSTEM PERFORMANCE OR LOADING
+              if (state is DashboardLoading)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 40.0),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else ...[
+                // METRICS GRID (Responsive)
+                const Text(
+                  'SYSTEM PERFORMANCE',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.muted,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _buildMetricsGrid(adminType, metrics),
+                const SizedBox(height: 28),
+              ],
 
-          // RECENT ACTIVITY LOG
-          const Text(
-            'RECENT SYSTEM ACTIVITY',
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              color: AppColors.muted,
-              letterSpacing: 0.8,
-            ),
-          ),
-          const SizedBox(height: 12),
-          _buildRecentActivitySection(adminType),
-          const SizedBox(height: 24),
-        ],
+              // QUICK ACTIONS
+              const Text(
+                'QUICK ACTIONS',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.muted,
+                  letterSpacing: 0.8,
+                ),
+              ),
+              const SizedBox(height: 12),
+              _buildQuickActions(adminType),
+              const SizedBox(height: 28),
+
+              // RECENT ACTIVITY LOG
+              if (state is! DashboardLoading) ...[
+                const Text(
+                  'RECENT SYSTEM ACTIVITY',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.muted,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _buildRecentActivitySection(adminType, activities),
+                const SizedBox(height: 24),
+              ],
+            ],
+          );
+        },
       ),
     );
   }
@@ -144,14 +175,23 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildMetricsGrid(AdminType adminType) {
+  Widget _buildMetricsGrid(AdminType adminType, List<DashboardMetricModel> stats) {
     final double screenWidth = MediaQuery.of(context).size.width;
     final int crossAxisCount = screenWidth < 700 ? 2 : 4;
     final double aspectRatio = screenWidth < 700 ? 1.35 : 1.45;
 
+    String getValueFor(String title, String defaultValue) {
+      if (stats.isEmpty) return defaultValue;
+      final match = stats.firstWhere(
+        (e) => e.title.toLowerCase().trim() == title.toLowerCase().trim(),
+        orElse: () => DashboardMetricModel(title: title, value: defaultValue, delta: '', iconName: ''),
+      );
+      return match.value;
+    }
+
     final carsCard = DashboardCard(
       title: 'Total Cars',
-      value: '432',
+      value: getValueFor('Total Cars', '432'),
       icon: Icons.directions_car_rounded,
       delta: '+5%',
       iconColor: Colors.blue.shade700,
@@ -165,7 +205,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
     final usersCard = DashboardCard(
       title: 'Active Users',
-      value: '1,234',
+      value: getValueFor('Active Users', '1,234'),
       icon: Icons.people_alt_rounded,
       delta: '+12%',
       iconColor: Colors.teal.shade700,
@@ -179,7 +219,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
     final revenueCard = DashboardCard(
       title: 'Revenue',
-      value: r'$45k',
+      value: getValueFor('Revenue', r'$45k'),
       icon: Icons.monetization_on_rounded,
       delta: '+18%',
       iconColor: Colors.green.shade700,
@@ -193,7 +233,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
     final reviewsCard = DashboardCard(
       title: 'Pending Reviews',
-      value: '12',
+      value: getValueFor('Pending Reviews', '12'),
       icon: Icons.pending_actions_rounded,
       delta: '-2%',
       iconColor: Colors.amber.shade800,
@@ -329,9 +369,12 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildRecentActivitySection(AdminType adminType) {
-    // Show top 4 activities from MockData
-    final activities = MockData.activities.take(4).toList();
+  Widget _buildRecentActivitySection(
+      AdminType adminType, List<ActivityItemModel> apiActivities) {
+    // Show top 4 activities from API (or MockData if empty)
+    final activities = apiActivities.isEmpty
+        ? MockData.activities.take(4).toList()
+        : apiActivities.take(4).toList();
 
     return Container(
       decoration: BoxDecoration(

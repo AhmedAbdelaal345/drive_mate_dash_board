@@ -91,20 +91,13 @@ class _ManageUsersViewState extends State<_ManageUsersView> {
                     child: CustomSearchField(
                       hintText: 'Search users...',
                       controller: _searchController,
-                      onChanged: (v) =>
-                          context.read<UsersCubit>().search(v),
+                      onChanged: (v) => context.read<UsersCubit>().search(v),
                     ),
                   ),
                   const SizedBox(width: 10),
-                  _IconBtn(
-                    icon: Icons.filter_list_rounded,
-                    onTap: () {},
-                  ),
+                  _IconBtn(icon: Icons.filter_list_rounded, onTap: () {}),
                   const SizedBox(width: 8),
-                  _IconBtn(
-                    icon: Icons.download_rounded,
-                    onTap: () {},
-                  ),
+                  _IconBtn(icon: Icons.download_rounded, onTap: () {}),
                 ],
               ),
               const SizedBox(height: 16),
@@ -127,10 +120,8 @@ class _ManageUsersViewState extends State<_ManageUsersView> {
                 )
               else
                 ...users.map(
-                  (u) => _UserCard(
-                    user: u,
-                    isActionLoading: actionUserId == u.id,
-                  ),
+                  (u) =>
+                      _UserCard(user: u, isActionLoading: actionUserId == u.id),
                 ),
 
               const SizedBox(height: 8),
@@ -240,9 +231,7 @@ class _StatCard extends StatelessWidget {
             Text(
               value,
               style: TextStyle(
-                color: dark
-                    ? Colors.white
-                    : (valueColor ?? AppColors.text),
+                color: dark ? Colors.white : (valueColor ?? AppColors.text),
                 fontSize: 26,
                 fontWeight: FontWeight.w900,
               ),
@@ -268,10 +257,7 @@ class _UserCard extends StatelessWidget {
 
     final statusBadge = switch (user.status) {
       UserStatus.active => null,
-      UserStatus.suspended => (
-          'SUSPENDED',
-          AppColors.warning,
-        ),
+      UserStatus.suspended => ('SUSPENDED', AppColors.warning),
       UserStatus.banned => ('BANNED', AppColors.danger),
     };
 

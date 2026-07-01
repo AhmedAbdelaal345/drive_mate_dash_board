@@ -7,13 +7,48 @@ class ServiceCentersCubit extends Cubit<ServiceCentersState> {
 
   final ServiceCentersRepo repo;
 
-  Future<void> loadCenters() async {
+  String _query = '';
+  int _page = 1;
+
+  Future<void> loadCenters({String searchTerm = '', int page = 1}) async {
+    _query = searchTerm;
+    _page = page;
     emit(ServiceCentersLoading());
-    final response = await repo.getCenters();
-    if (response.success && response.data != null) {
-      emit(ServiceCentersSuccess(response.data!));
-    } else {
+    try {
+      final response = await repo.getCenters(
+        pageNumber: _page,
+        searchTerm: _query,
+      );
+      emit(ServiceCentersSuccess(response));
+    } catch (e) {
+      emit(ServiceCentersError(e.toString()));
+    }
+  }
+
+  Future<bool> createCenter({
+    required String name,
+    required String address,
+    required double latitude,
+    required double longitude,
+    required String phone,
+  }) async {
+    try {
+      final response = await repo.createCenter(
+        name: name,
+        address: address,
+        latitude: latitude,
+        longitude: longitude,
+        phone: phone,
+      );
+      if (response.status == true) {
+        await loadCenters(searchTerm: _query, page: _page);
+        return true;
+      }
       emit(ServiceCentersError(response.message));
+      return false;
+    } catch (e) {
+      emit(ServiceCentersError(e.toString()));
+      return false;
     }
   }
 }

@@ -136,9 +136,9 @@ class AppRouter {
             if (args is AppRouteArgs) {
               adminType = args.adminType;
             } else if (args is Map && args.containsKey('id')) {
-              carId = args['id'];
+              carId = args;
             } else if (args is Map<String, Object?>) {
-              carId = args['id'];
+              carId = args;
             }
             return EditCarPage(adminType: adminType, carId: carId);
           },
@@ -315,3 +315,4 @@ class AppRouter {
     }
   }
 }
+

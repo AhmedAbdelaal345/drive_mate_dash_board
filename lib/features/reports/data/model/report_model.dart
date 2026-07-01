@@ -16,4 +16,16 @@ class ReportModel {
   final String status;
   final String priority;
   final String title;
+
+  factory ReportModel.fromJson(Map<String, dynamic> json) {
+    return ReportModel(
+      id: json['id'] as String? ?? '',
+      user: json['user'] as String? ?? '',
+      type: json['type'] as String? ?? '',
+      date: json['date'] as String? ?? '',
+      status: json['status'] as String? ?? '',
+      priority: json['priority'] as String? ?? '',
+      title: json['title'] as String? ?? '',
+    );
+  }
 }

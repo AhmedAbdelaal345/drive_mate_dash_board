@@ -9,11 +9,11 @@ class ReportsCubit extends Cubit<ReportsState> {
 
   Future<void> loadReports() async {
     emit(ReportsLoading());
-    final response = await repo.getReports();
-    if (response.success && response.data != null) {
-      emit(ReportsSuccess(response.data!));
-    } else {
-      emit(ReportsError(response.message));
-    }
+    await repo.getReports().then(
+      (value) => value.fold(
+        (l) => emit(ReportsError(l)),
+        (r) => emit(ReportsSuccess(r)),
+      ),
+    );
   }
 }

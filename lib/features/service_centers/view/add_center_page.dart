@@ -4,6 +4,8 @@ import 'package:drive_mate_dash_board/core/widgets/custom_drop_down.dart';
 import 'package:drive_mate_dash_board/core/widgets/dashboard_shell.dart';
 import 'package:drive_mate_dash_board/core/widgets/form_section.dart';
 import 'package:drive_mate_dash_board/features/auth/data/model/auth_model.dart';
+import 'package:drive_mate_dash_board/features/service_centers/manager/service_centers_cubit.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
 
 class AddCenterPage extends StatefulWidget {
@@ -146,14 +148,26 @@ class _AddCenterPageState extends State<AddCenterPage> {
                     CustomButton(
                       label: 'Add Center',
                       icon: Icons.check,
-                      onPressed: () {
+                      onPressed: () async {
                         if (_formKey.currentState?.validate() ?? false) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Service center added successfully (Mock)'),
-                            ),
-                          );
-                          Navigator.pop(context);
+                          final success = await context
+                              .read<ServiceCentersCubit>()
+                              .createCenter(
+                                name: _nameController.text.trim(),
+                                address:
+                                    '${_locationController.text.trim()}, ${_cityController.text.trim()}',
+                                latitude: 30.0444,
+                                longitude: 31.2357,
+                                phone: _phoneController.text.trim(),
+                              );
+                          if (success && mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Service center added successfully'),
+                              ),
+                            );
+                            Navigator.pop(context);
+                          }
                         }
                       },
                     ),

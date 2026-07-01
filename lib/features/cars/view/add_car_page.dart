@@ -4,7 +4,10 @@ import 'package:drive_mate_dash_board/core/widgets/custom_drop_down.dart';
 import 'package:drive_mate_dash_board/core/widgets/dashboard_shell.dart';
 import 'package:drive_mate_dash_board/core/widgets/form_section.dart';
 import 'package:drive_mate_dash_board/features/auth/data/model/auth_model.dart';
+import 'package:drive_mate_dash_board/features/cars/data/model/car_model.dart';
+import 'package:drive_mate_dash_board/features/cars/manager/cars_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AddCarPage extends StatefulWidget {
   const AddCarPage({super.key, required this.adminType});
@@ -26,6 +29,7 @@ class _AddCarPageState extends State<AddCarPage> {
 
   String _condition = 'Used';
   String _status = 'Published';
+  bool _isSaving = false;
 
   @override
   void dispose() {
@@ -36,6 +40,31 @@ class _AddCarPageState extends State<AddCarPage> {
     _priceController.dispose();
     _descController.dispose();
     super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+
+    setState(() => _isSaving = true);
+    final success = await context.read<CarsCubit>().createCar(
+          CreateCarRequest(
+            brandName: _brandController.text.trim(),
+            modelName: _modelController.text.trim(),
+          ),
+        );
+
+    if (!mounted) return;
+    setState(() => _isSaving = false);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          success ? 'Car created successfully' : 'Failed to create car',
+        ),
+      ),
+    );
+
+    if (success) Navigator.pop(context);
   }
 
   @override
@@ -57,8 +86,6 @@ class _AddCarPageState extends State<AddCarPage> {
                     labelText: 'Car Name / Title',
                     hintText: 'e.g. Toyota Camry 2024',
                   ),
-                  validator: (v) =>
-                      v == null || v.trim().isEmpty ? 'Required field' : null,
                 ),
                 const SizedBox(height: 16),
                 Row(
@@ -101,9 +128,6 @@ class _AddCarPageState extends State<AddCarPage> {
                           hintText: 'e.g. 2024',
                         ),
                         keyboardType: TextInputType.number,
-                        validator: (v) => v == null || v.trim().isEmpty
-                            ? 'Required field'
-                            : null,
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -114,9 +138,6 @@ class _AddCarPageState extends State<AddCarPage> {
                           labelText: 'Price',
                           hintText: 'e.g. \$28,000',
                         ),
-                        validator: (v) => v == null || v.trim().isEmpty
-                            ? 'Required field'
-                            : null,
                       ),
                     ),
                   ],
@@ -140,11 +161,7 @@ class _AddCarPageState extends State<AddCarPage> {
                             value: _condition,
                             items: const ['New', 'Used'],
                             onChanged: (val) {
-                              if (val != null) {
-                                setState(() {
-                                  _condition = val;
-                                });
-                              }
+                              if (val != null) setState(() => _condition = val);
                             },
                           ),
                         ],
@@ -167,11 +184,7 @@ class _AddCarPageState extends State<AddCarPage> {
                             value: _status,
                             items: const ['Published', 'Draft', 'Sold'],
                             onChanged: (val) {
-                              if (val != null) {
-                                setState(() {
-                                  _status = val;
-                                });
-                              }
+                              if (val != null) setState(() => _status = val);
                             },
                           ),
                         ],
@@ -200,18 +213,9 @@ class _AddCarPageState extends State<AddCarPage> {
                     ),
                     const SizedBox(width: 16),
                     CustomButton(
-                      label: 'Publish Car',
+                      label: _isSaving ? 'Saving...' : 'Publish Car',
                       icon: Icons.publish,
-                      onPressed: () {
-                        if (_formKey.currentState?.validate() ?? false) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Car added successfully (Mock)'),
-                            ),
-                          );
-                          Navigator.pop(context);
-                        }
-                      },
+                      onPressed: _isSaving ? () {} : _submit,
                     ),
                   ],
                 ),

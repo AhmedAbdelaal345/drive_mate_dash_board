@@ -31,10 +31,13 @@ dependencies:
   bloc: ^9.2.1
   cupertino_icons: ^1.0.8
   dartz: ^0.10.1
+  dio: ^5.10.0
   flutter:
     sdk: flutter
   flutter_bloc: ^9.1.1
   fluttertoast: ^9.1.0
+  http: ^1.2.2
+  image_picker: ^1.2.3
 
 dev_dependencies:
   flutter_lints: ^6.0.0
@@ -79,3 +82,4 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+

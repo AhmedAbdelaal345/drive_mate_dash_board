@@ -3,17 +3,17 @@ import 'package:drive_mate_dash_board/features/admins/manager/admins_state.dart'
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AdminsCubit extends Cubit<AdminsState> {
-  AdminsCubit(this.repo) : super(AdminsInitial());
+  AdminsCubit(this._repo) : super(const AdminsInitial());
 
-  final AdminsRepo repo;
+  final AdminsRepo _repo;
 
   Future<void> loadAdmins() async {
-    emit(AdminsLoading());
-    final response = await repo.getAdmins();
-    if (response.success && response.data != null) {
-      emit(AdminsSuccess(response.data!));
-    } else {
-      emit(AdminsError(response.message));
+    emit(const AdminsLoading());
+    try {
+      final response = await _repo.fetchAdmins();
+      response.fold((l) => emit(AdminsError(l)), (r) => emit(AdminsSuccess(r)));
+    } catch (e) {
+      emit(AdminsError(e.toString()));
     }
   }
 }

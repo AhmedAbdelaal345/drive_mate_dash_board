@@ -9,11 +9,11 @@ class DashboardCubit extends Cubit<DashboardState> {
 
   Future<void> load() async {
     emit(DashboardLoading());
-    final response = await repo.getDashboardData();
-    if (response.success && response.data != null) {
-      emit(DashboardSuccess(response.data!));
-    } else {
-      emit(DashboardError(response.message));
+    try {
+      final response = await repo.getDashboardData();
+      emit(DashboardSuccess(response.metrics, response.activities));
+    } catch (e) {
+      emit(DashboardError('Failed to load dashboard data'));
     }
   }
 }
